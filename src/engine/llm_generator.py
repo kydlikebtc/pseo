@@ -5,12 +5,10 @@ Uses the OpenAI-compatible API that is pre-configured in the Manus environment.
 No LLM API key configuration is required from the user — the environment
 variable OPENAI_API_KEY and base_url are already injected by the runtime.
 
-Supported models (auto-detected from environment):
-  - gpt-4.1-mini  (default, fast and cost-effective)
-  - gpt-4.1-nano  (fastest, lowest cost)
-  - gemini-2.5-flash (Google Gemini via OpenAI-compatible endpoint)
+Supported models: any model name accepted via LLM_MODEL env var.
+Examples: gpt-4.1-mini (default), gpt-4.1-nano, gemini-2.5-flash, claude-3-5-sonnet, etc.
 
-To override the model, set OPENAI_MODEL in your .env file.
+To override the model, set LLM_MODEL in your .env file. Any model name is accepted.
 """
 import json
 import os
@@ -41,9 +39,10 @@ def _build_client() -> OpenAI:
 def _get_model() -> str:
     """
     Resolve the LLM model to use.
-    Priority: OPENAI_MODEL env var → default gpt-4.1-mini
+    Priority: LLM_MODEL env var → default gpt-4.1-mini
+    Any model name is accepted — no restriction on model choice.
     """
-    return os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+    return os.environ.get("LLM_MODEL", "gpt-4.1-mini")
 
 
 class LLMContentGenerator:
