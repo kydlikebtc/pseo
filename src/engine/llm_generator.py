@@ -1,25 +1,78 @@
 """
 LLM-based content generator for pSEO pages.
-Uses structured prompts to generate information-gain content based on real tool data.
-Avoids content-farm patterns by requiring factual grounding.
+
+Uses the OpenAI-compatible API that is pre-configured in the Manus environment.
+No LLM API key configuration is required from the user — the environment
+variable OPENAI_API_KEY and base_url are already injected by the runtime.
+
+Supported models (auto-detected from environment):
+  - gpt-4.1-mini  (default, fast and cost-effective)
+  - gpt-4.1-nano  (fastest, lowest cost)
+  - gemini-2.5-flash (Google Gemini via OpenAI-compatible endpoint)
+
+To override the model, set OPENAI_MODEL in your .env file.
 """
 import json
 import os
-from typing import Optional
 from openai import OpenAI
 
-from src.config import settings
+
+# ---------------------------------------------------------------------------
+# Client initialization
+# ---------------------------------------------------------------------------
+# OPENAI_API_KEY and base_url are pre-injected by the Manus runtime.
+# If running outside Manus (e.g. local dev), set OPENAI_API_KEY manually.
+# ---------------------------------------------------------------------------
+
+def _build_client() -> OpenAI:
+    """
+    Build an OpenAI client.
+    - Inside Manus: OPENAI_API_KEY + base_url are pre-configured in env.
+    - Outside Manus: reads OPENAI_API_KEY from .env; uses default OpenAI endpoint.
+    """
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    base_url = os.environ.get("OPENAI_BASE_URL", None)  # Manus injects this
+
+    if base_url:
+        return OpenAI(api_key=api_key, base_url=base_url)
+    return OpenAI(api_key=api_key)
+
+
+def _get_model() -> str:
+    """
+    Resolve the LLM model to use.
+    Priority: OPENAI_MODEL env var → default gpt-4.1-mini
+    """
+    return os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
 
 
 class LLMContentGenerator:
     """
     Generates structured, information-rich SEO content using LLM.
     All content is grounded in real structured data to ensure Information Gain.
+
+    No API key setup is required when running inside the Manus environment.
     """
 
     def __init__(self):
-        self.client = OpenAI(api_key=settings.openai_api_key)
-        self.model = settings.openai_model
+        self.client = _build_client()
+        self.model = _get_model()
+
+    def _call(self, prompt: str) -> dict:
+        """Shared LLM call with JSON output enforcement."""
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert SEO content writer. Always output valid JSON."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.7
+        )
+        return json.loads(response.choices[0].message.content)
 
     def generate_alternatives_page(
         self,
@@ -69,18 +122,7 @@ OUTPUT SCHEMA:
     {{"question": "...", "answer": "..."}}
   ]
 }}"""
-
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are an expert SEO content writer. Always output valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.7
-        )
-
-        return json.loads(response.choices[0].message.content)
+        return self._call(prompt)
 
     def generate_comparison_page(
         self,
@@ -127,18 +169,7 @@ OUTPUT SCHEMA:
     {{"question": "...", "answer": "..."}}
   ]
 }}"""
-
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are an expert SEO content writer. Always output valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.7
-        )
-
-        return json.loads(response.choices[0].message.content)
+        return self._call(prompt)
 
     def generate_listicle_page(
         self,
@@ -185,15 +216,4 @@ OUTPUT SCHEMA:
     {{"question": "...", "answer": "..."}}
   ]
 }}"""
-
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are an expert SEO content writer. Always output valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.7
-        )
-
-        return json.loads(response.choices[0].message.content)
+        return self._call(prompt)
