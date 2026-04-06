@@ -33,12 +33,10 @@ class TestCompetitorMonitor:
         assert comp1.id == comp2.id
 
     def test_update_competitor_metrics_mock(self, monitor):
-        """Test updating competitor metrics using mock data."""
-        # No Ahrefs key → uses mock data
+        """Test updating competitor metrics using SimilarWeb or mock data."""
         comp = monitor.update_competitor_metrics("futuretools.io")
         assert comp is not None
         assert comp.domain == "futuretools.io"
-        assert comp.domain_rating > 0
         assert comp.monthly_traffic > 0
         assert comp.last_checked_at is not None
 
@@ -115,5 +113,5 @@ class TestCompetitorMonitor:
 
         for comp_data in report["competitors"]:
             assert "domain" in comp_data
-            assert "domain_rating" in comp_data
+            assert "seo_traffic_ratio" in comp_data
             assert "monthly_traffic" in comp_data

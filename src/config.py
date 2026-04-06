@@ -17,14 +17,22 @@ class Settings(BaseSettings):
     database_url: str = Field(default="sqlite:///./pseo.db")
 
     # LLM
+    # When running inside Manus, OPENAI_API_KEY and OPENAI_BASE_URL are auto-injected.
+    # LLM_MODEL accepts any model name string — no validation is applied.
     openai_api_key: str = Field(default="")
-    llm_model: str = Field(default="gpt-5.4-mini")  # Any model name accepted, set via LLM_MODEL env var
+    llm_model: str = Field(default="gpt-4.1-mini")  # Any model name accepted
 
     # Google APIs
     google_service_account_file: str = Field(default="config/google_service_account.json")
 
-    # Ahrefs
-    ahrefs_api_key: str = Field(default="")
+    # Competitor Monitoring
+    # SimilarWeb: auto-available inside Manus via built-in ApiClient (no key needed).
+    #             Set SIMILARWEB_API_KEY only when running outside Manus.
+    similarweb_api_key: str = Field(default="")
+
+    # Semrush: free tier (10 req/day) is sufficient for weekly backlink scans.
+    #          Sign up at https://www.semrush.com to get a free API key.
+    semrush_api_key: str = Field(default="")
 
     # Notifications
     feishu_webhook_url: str = Field(default="")
