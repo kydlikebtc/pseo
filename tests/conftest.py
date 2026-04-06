@@ -8,7 +8,7 @@ import pytest
 # Set test environment BEFORE importing any src modules
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["OPENAI_API_KEY"] = "test-key-not-real"
-os.environ["LLM_MODEL"] = "gpt-4.1-mini"  # Any model name accepted
+os.environ["LLM_MODEL"] = "gpt-5.4-mini"  # Any model name accepted
 os.environ["SITE_URL"] = "https://test-site.com"
 os.environ["FEISHU_WEBHOOK_URL"] = ""
 os.environ["AHREFS_API_KEY"] = ""

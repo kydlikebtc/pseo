@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # LLM
     openai_api_key: str = Field(default="")
-    llm_model: str = Field(default="gpt-4.1-mini")  # Any model name accepted, set via LLM_MODEL env var
+    llm_model: str = Field(default="gpt-5.4-mini")  # Any model name accepted, set via LLM_MODEL env var
 
     # Google APIs
     google_service_account_file: str = Field(default="config/google_service_account.json")
